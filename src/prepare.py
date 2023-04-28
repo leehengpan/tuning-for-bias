@@ -15,6 +15,9 @@ def remove_special_char(txt):
             print(e)
     return txt.strip()
 
+def make_lowercase(txt):
+    return txt.lower()
+
 
 def remove_char_encoding(txt):
     """Remove character encoding from text."""
@@ -60,5 +63,5 @@ def collate_data(files, save_to=None, clean_text=None):
 
 
 files = ['../data/foxnews_collate_content_v1.json', '../data/nyt_collate_content_v1.json']
-clean_text = [remove_char_encoding]
-collate_data(files, save_to='../data/nytfox_collate.json', clean_text=clean_text)
+clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
+collate_data(files, save_to='../data/nytfox_collate_v2.json', clean_text=clean_text)
