@@ -1,6 +1,6 @@
 import json
 from transformers import AutoTokenizer, AutoModel
-import tensorflow as tf 
+import tensorflow as tf
 
 # Load pre-trained BERT model and tokenizer
 model_name = "bert-base-cased"
@@ -13,10 +13,10 @@ with open('data/nyt_contents_1.json', 'r') as f:
 
 articles = []
 max_len = 0
-avg_len = 0 
+avg_len = 0
 count = 0
 
-# convert data to label, content format 
+# convert data to label, content format
 for article in data:
 
     new = {}
@@ -32,13 +32,12 @@ for article in data:
             max_len = len(new['content'].split())
         articles.append(new)
 
-print(avg_len/count)
+print(avg_len / count)
 
 tokenized_articles = []
 
 for article in articles:
-
-    # dictionary to hold tokenized article content 
+    # dictionary to hold tokenized article content
     tokenized = {}
 
     # Create a TextVectorization layer
@@ -55,14 +54,7 @@ for article in articles:
     # tokenized['label'] = tokenizer.encode_plus(article['label'], return_tensors='pt')
     # tokenized['content'] = tokenizer.encode_plus(article['content'], return_tensors='pt')
 
-    # save tokenized article to article list 
+    # save tokenized article to article list
     tokenized_articles.append(tokenized)
 
-   
-
     print(tokenized_articles[0])
-
-    exit
-
-
-
