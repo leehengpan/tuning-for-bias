@@ -1,60 +1,42 @@
-import json
-from transformers import AutoTokenizer, AutoModel
+import numpy as np
 import tensorflow as tf
+import pickle
+import json
 
-# Load pre-trained BERT model and tokenizer
-model_name = "bert-base-cased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name)
+np.random.seed(2470)
 
-# Load data from JSON file
-with open('data/nyt_contents_1.json', 'r') as f:
-    data = json.load(f)
+def train_test_split(input_file='../data/nytfox_collate_v2.json', test_split=0.2):
+    """Read data from input_file and split into train and test arrays"""
 
-articles = []
-max_len = 0
-avg_len = 0
-count = 0
+    with open(input_file) as f:
+        data = json.load(f)
 
-# convert data to label, content format
-for article in data:
+    # separate content and title data into separate lists
+    content_arr = [item['content'] for item in data]
+    title_arr = [item['title'] for item in data]
 
-    new = {}
+    num_samples = len(content_arr)
+    num_test_samples = int(test_split * num_samples)
 
-    if article != None and article['content'] != "":
+    # find random indices to create train and test arrays
+    idx = np.arange(0, num_samples)
+    np.random.shuffle(idx)
 
-        new['label'] = article['view'] + ": " + article['title']
-        new['content'] = article['content']
+    # create train and test sets for content and titles
+    temp_content_arr = np.array(content_arr)[idx]
+    temp_title_arr = np.array(title_arr)[idx]
 
-        avg_len += len(new['content'].split())
-        count += 1
-        if len(new['content'].split()) > max_len:
-            max_len = len(new['content'].split())
-        articles.append(new)
+    train_content = (temp_content_arr.tolist())[:-num_test_samples]
+    test_content = (temp_content_arr.tolist())[-num_test_samples:]
 
-print(avg_len / count)
+    train_title = (temp_title_arr.tolist())[:-num_test_samples]
+    test_title = (temp_title_arr.tolist())[-num_test_samples:]
 
-tokenized_articles = []
+    return train_content, train_title, test_content, test_title
 
-for article in articles:
-    # dictionary to hold tokenized article content
-    tokenized = {}
 
-    # Create a TextVectorization layer
-    vectorizer = tf.keras.layers.TextVectorization(output_mode='int', output_sequence_length=6)
+if __name__ == '__main__':
+    train_content, train_title, test_content, test_title = train_test_split()
 
-    label = [article['label']]
-    content = [article['content']]
 
-    # Adapt the TextVectorization layer to the text
-    tokenized['label'] = vectorizer.adapt(label)
-    tokenized['content'] = vectorizer.adapt(content)
 
-    # # save tokenized inputs to dictionary
-    # tokenized['label'] = tokenizer.encode_plus(article['label'], return_tensors='pt')
-    # tokenized['content'] = tokenizer.encode_plus(article['content'], return_tensors='pt')
-
-    # save tokenized article to article list
-    tokenized_articles.append(tokenized)
-
-    print(tokenized_articles[0])
