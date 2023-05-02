@@ -7,7 +7,6 @@ def remove_special_char(txt):
 
     special_char = re.compile(r'[^A-Za-z0-9\s\-\/]+', re.IGNORECASE)
     special_char_space = re.compile(r'[\-\/]+', re.IGNORECASE)
-
     txt = str(txt).lower().strip()
     check_list = special_char.findall(txt)
     for item in check_list:
