@@ -4,7 +4,6 @@ import json
 
 def remove_special_char(txt):
     """Remove special characters from text."""
-
     FIRST_LAST_SC = re.compile(r'[^A-Za-z0-9\s]+', re.IGNORECASE)
     txt = str(txt).lower().strip()
     check_list = FIRST_LAST_SC.findall(txt)
