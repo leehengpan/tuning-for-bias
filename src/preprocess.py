@@ -13,7 +13,7 @@ TITLE_VECTORIZER = TextVectorization(max_tokens=15000, split='whitespace', outpu
 GLOVE_EMBED_SZ = 100
 
 
-def train_test_split(input_file='../data/nytfox_collate_v2.json', test_split=0.2):
+def train_test_split(input_file='../data/nytfox_collate_v1.json', test_split=0.2):
     """Read data from input_file and split into train and test arrays"""
 
     with open(input_file) as f:
@@ -155,3 +155,11 @@ if __name__ == '__main__':
     test_title_emb = create_embeddings(test_title, glove_index, 32, 100, 'test_title')
     train_title_labels = create_token_labels(train_title, TITLE_VECTORIZER, dataset_name='train')
     test_title_labels = create_token_labels(test_title, TITLE_VECTORIZER, dataset_name='test')
+
+    save_to_pickle(train_content_emb, '../data/embeddings/train_content_embeddings.pkl')
+    save_to_pickle(test_content_emb, '../data/embeddings/test_content_embeddings.pkl')
+    save_to_pickle(train_title_emb, '../data/embeddings/train_title_embeddings.pkl')
+    save_to_pickle(test_title_emb, '../data/embeddings/test_title_embeddings.pkl')
+    save_to_pickle(train_title_labels, '../data/embeddings/train_title_labels.pkl')
+    save_to_pickle(test_title_labels, '../data/embeddings/test_title_labels.pkl')
+    save_to_pickle(title_index_word, '../data/embeddings/title_index_word.pkl')

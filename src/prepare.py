@@ -77,6 +77,6 @@ def collate_data(files, save_to=None, clean_text=None):
             print(f'Saved to {save_to}')
 
 
-files = ['../data/foxnews_collate_v1.json', '../data/nyt_collate_v1.json']
+files = ['../data/v1/foxnews_collate_v1.json', '../data/v1/nyt_collate_v1.json']
 clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
-collate_data(files, save_to='../data/nytfox_collate_v1.json', clean_text=clean_text)
+collate_data(files, save_to='../data/v1/nytfox_collate_v1.json', clean_text=clean_text)
