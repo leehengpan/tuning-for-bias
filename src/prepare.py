@@ -4,14 +4,25 @@ import json
 
 def remove_special_char(txt):
     """Remove special characters from text."""
-    FIRST_LAST_SC = re.compile(r'[^A-Za-z0-9\s]+', re.IGNORECASE)
+
+    special_char = re.compile(r'[^A-Za-z0-9\s\-\/]+', re.IGNORECASE)
+    special_char_space = re.compile(r'[\-\/]+', re.IGNORECASE)
     txt = str(txt).lower().strip()
-    check_list = FIRST_LAST_SC.findall(txt)
+    check_list = special_char.findall(txt)
     for item in check_list:
         try:
             txt = txt.replace(item, '')
+
         except Exception as e:
             print(e)
+
+    check_list_space = special_char_space.findall(txt)
+    for item in check_list_space:
+        try:
+            txt = txt.replace(item, ' ')
+        except Exception as e:
+            print(e)
+
     return txt.strip()
 
 def make_lowercase(txt):
@@ -32,6 +43,7 @@ def collate_data(files, save_to=None, clean_text=None):
         clean_text = list of functions to remove special characters, encoding, stemming, etc."""
 
     result = []
+    title_set = set()
 
     for file in files:
         with open(file) as f:
@@ -42,11 +54,14 @@ def collate_data(files, save_to=None, clean_text=None):
                 temp_dict = {}
                 try:
                     if info_dict['content'] == '' or info_dict['content'] is None or \
-                            info_dict['title'] == '' or info_dict['title'] is None:
+                            info_dict['title'] == '' or info_dict['title'] is None or \
+                            info_dict['title'] in title_set:
                         continue
 
+                    title_set.add(info_dict['title'])
                     temp_dict['content'] = info_dict['content']
                     temp_dict['title'] = info_dict['title']
+
                     if clean_text:
                         for func in clean_text:
                             temp_dict['content'] = func(temp_dict['content'])
@@ -61,6 +76,6 @@ def collate_data(files, save_to=None, clean_text=None):
             print(f'Saved to {save_to}')
 
 
-files = ['../data/foxnews_collate_content_v1.json', '../data/nyt_collate_content_v1.json']
+files = ['../data/v1/foxnews_collate_v1.json', '../data/v1/nyt_collate_v1.json']
 clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
-collate_data(files, save_to='../data/nytfox_collate_v2.json', clean_text=clean_text)
+collate_data(files, save_to='../data/v1/nytfox_collate_v1.json', clean_text=clean_text)
