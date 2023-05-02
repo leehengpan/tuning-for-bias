@@ -1,0 +1,15 @@
+url,footer,article,topic,show_more
+https://www.foxnews.com/category/health/orthopedics/technology,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",technology,200
+https://www.foxnews.com/category/tech/technologies,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",technology,200
+https://www.foxnews.com/category/tech,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",technology,200
+https://www.foxnews.com/politics,"//*[@id=""wrapper""]/div[2]/div[2]/div/main/section[4]/footer/div/a","//*[@id=""wrapper""]/div[2]/div[2]/div/main/section[4]/div/article",politics,200
+https://www.foxnews.com/category/newsedge/politics,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",politics,200
+https://www.foxnews.com/category/politics,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",politics,200
+https://www.foxnews.com/category/world/world-politics,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",politics,200
+https://www.foxnews.com/category/health,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",health,250
+https://www.foxnews.com/category/health/infectious-disease/coronavirus,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section[1]/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section[1]/div/article",health,250
+https://www.foxnews.com/category/health/infectious-disease/vaccines,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",health,250
+https://www.foxnews.com/category/politics/house-of-representatives/foreign-affairs,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",world,250
+https://www.foxnews.com/category/politics/foreign-policy,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",world,250
+https://www.foxnews.com/category/us/economy,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",financial,250
+https://www.foxnews.com/category/world/global-economy,"//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/footer/div/a","//*[@id=""wrapper""]/div[2]/div[3]/div/main/section/div/article",financial,250
