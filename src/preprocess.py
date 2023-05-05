@@ -13,7 +13,7 @@ TITLE_VECTORIZER = TextVectorization(max_tokens=15000, split='whitespace', outpu
 GLOVE_EMBED_SZ = 100
 
 
-def train_test_split(input_file='../data/nytfox_collate_v1.json', test_split=0.2):
+def train_test_split(input_file='../data/v1/nytfox_collate_v1.json', test_split=0.2):
     """Read data from input_file and split into train and test arrays"""
 
     with open(input_file) as f:
@@ -65,7 +65,7 @@ def vectorize_data(train_content, train_title,
     return content_vocab, content_word_index, content_index_word, title_vocab, title_word_index, title_index_word
 
 
-def build_glove_embed_index(path_to_glove='glove.6B/glove.6B.100d.txt'):
+def build_glove_embed_index(path_to_glove='../data/glove.6B/glove.6B.100d.txt'):
     embeddings_index = {}
     with open(path_to_glove) as f:
         for line in f:
@@ -151,8 +151,8 @@ if __name__ == '__main__':
 
     train_content_emb = create_embeddings(train_content, glove_index, 256, 100, 'train_content')
     test_content_emb = create_embeddings(test_content, glove_index, 256, 100, 'test_content')
-    train_title_emb = create_embeddings(train_title, glove_index, 32, 100, 'train_title')
-    test_title_emb = create_embeddings(test_title, glove_index, 32, 100, 'test_title')
+    train_title_emb = create_embeddings(train_title, glove_index, 16, 100, 'train_title')
+    test_title_emb = create_embeddings(test_title, glove_index, 16, 100, 'test_title')
     train_title_labels = create_token_labels(train_title, TITLE_VECTORIZER, dataset_name='train')
     test_title_labels = create_token_labels(test_title, TITLE_VECTORIZER, dataset_name='test')
 

@@ -2,6 +2,7 @@ import re
 from urllib.parse import unquote, unquote_plus
 import json
 
+
 def remove_special_char(txt):
     """Remove special characters from text."""
 
@@ -25,6 +26,7 @@ def remove_special_char(txt):
 
     return txt.strip()
 
+
 def make_lowercase(txt):
     return txt.lower()
 
@@ -43,22 +45,19 @@ def collate_data(files, save_to=None, clean_text=None):
         clean_text = list of functions to remove special characters, encoding, stemming, etc."""
 
     result = []
-    title_set = set()
 
     for file in files:
         with open(file) as f:
             info_arr = json.load(f)
             for i, info_dict in enumerate(info_arr):
-                if (i % 1000==0):
+                if (i % 1000 == 0):
                     print(f'Processed {i} articles in file {file}')
                 temp_dict = {}
                 try:
-                    if info_dict['content'] == '' or info_dict['content'] is None or \
-                            info_dict['title'] == '' or info_dict['title'] is None or \
-                            info_dict['title'] in title_set:
+                    if (info_dict['content'] == '' or info_dict['content'] is None or
+                            info_dict['title'] == '' or info_dict['title'] is None):
                         continue
 
-                    title_set.add(info_dict['title'])
                     temp_dict['content'] = info_dict['content']
                     temp_dict['title'] = info_dict['title']
 
@@ -75,8 +74,8 @@ def collate_data(files, save_to=None, clean_text=None):
             json.dump(result, f)
             print(f'Saved to {save_to}')
 
-if __name__=='__main__':
-    
+
+if __name__ == '__main__':
     files = ['../data/v1/foxnews_collate_v1.json', '../data/v1/nyt_collate_v1.json']
     clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
     collate_data(files, save_to='../data/v1/nytfox_collate_v1.json', clean_text=clean_text)
