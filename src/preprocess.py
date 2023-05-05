@@ -9,7 +9,7 @@ np.random.seed(2470)
 CONTENT_VECTORIZER = TextVectorization(max_tokens=100000, split='whitespace', output_mode='int',
                                        standardize='lower_and_strip_punctuation', output_sequence_length=256)
 TITLE_VECTORIZER = TextVectorization(max_tokens=15000, split='whitespace', output_mode='int',
-                                     standardize='lower_and_strip_punctuation', output_sequence_length=32)
+                                     standardize='lower_and_strip_punctuation', output_sequence_length=16)
 GLOVE_EMBED_SZ = 100
 
 
