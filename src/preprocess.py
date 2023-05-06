@@ -13,7 +13,7 @@ TITLE_VECTORIZER = TextVectorization(max_tokens=15000, split='whitespace', outpu
 GLOVE_EMBED_SZ = 100
 
 
-def train_test_split(input_file='../data/v1/nytfox_collate_v1.json', test_split=0.2):
+def train_test_split(input_file='../data/v2/nytfox_collate.json', test_split=0.05):
     """Read data from input_file and split into train and test arrays"""
 
     with open(input_file) as f:

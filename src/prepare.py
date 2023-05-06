@@ -53,6 +53,8 @@ def collate_data(files, save_to=None, clean_text=None):
                 if (i % 1000 == 0):
                     print(f'Processed {i} articles in file {file}')
                 temp_dict = {}
+                if info_dict is None:
+                    continue
                 try:
                     if (info_dict['content'] == '' or info_dict['content'] is None or
                             info_dict['title'] == '' or info_dict['title'] is None):
@@ -65,6 +67,8 @@ def collate_data(files, save_to=None, clean_text=None):
                         for func in clean_text:
                             temp_dict['content'] = func(temp_dict['content'])
                             temp_dict['title'] = func(temp_dict['title'])
+
+                    temp_dict['content'] = info_dict['view'] + ' : ' + temp_dict['content']
                     result.append(temp_dict)
 
                 except Exception as e:
@@ -76,6 +80,7 @@ def collate_data(files, save_to=None, clean_text=None):
 
 
 if __name__ == '__main__':
-    files = ['../data/v1/foxnews_collate_v1.json', '../data/v1/nyt_collate_v1.json']
+    files = ['../data/v2/foxnews_content_v2.json', '../data/v2/nyt_content_isaac.json',
+              '../data/v2/nyt_content_liam.json', '../data/v2/nyt_content_sagar.json']
     clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
-    collate_data(files, save_to='../data/v1/nytfox_collate_v1.json', clean_text=clean_text)
+    collate_data(files, save_to='../data/v2/nytfox_collate.json', clean_text=clean_text)
