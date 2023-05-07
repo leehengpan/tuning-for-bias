@@ -84,3 +84,8 @@ if __name__ == '__main__':
               '../data/v2/nyt_content_liam.json', '../data/v2/nyt_content_sagar.json']
     clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
     collate_data(files, save_to='../data/v2/nytfox_collate.json', clean_text=clean_text)
+
+    bbc_files = ['../data/v2/bbc_scrape.json']
+    collate_data(files=bbc_files, save_to='../data/v2/bbc_neutral.json', clean_text=clean_text)
+
+
