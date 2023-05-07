@@ -13,7 +13,7 @@ TITLE_VECTORIZER = TextVectorization(max_tokens=15000, split='whitespace', outpu
 GLOVE_EMBED_SZ = 100
 
 
-def train_test_split(input_file='../data/v2/nytfox_collate.json', test_split=0.05):
+def train_test_split(input_file='../data/v2/nytfox_collate.json', test_split=0.05, shuffle=True):
     """Read data from input_file and split into train and test arrays"""
 
     with open(input_file) as f:
@@ -28,7 +28,8 @@ def train_test_split(input_file='../data/v2/nytfox_collate.json', test_split=0.0
 
     # find random indices to create train and test arrays
     idx = np.arange(0, num_samples)
-    np.random.shuffle(idx)
+    if shuffle:
+        np.random.shuffle(idx)
 
     # create train and test sets for content and titles
     temp_content_arr = np.array(content_arr)[idx].tolist()
