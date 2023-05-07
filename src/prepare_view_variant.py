@@ -39,7 +39,7 @@ def remove_char_encoding(txt):
     return unquote(unquote_plus(txt.encode('ascii', 'ignore').decode()))
 
 
-def collate_data(files, save_to=None, clean_text=None, mapfile='../data/v2/nytfox_view_based_map.csv'):
+def collate_data(files, save_to=None, clean_text=None, mapfile='../data/v2/nytfox_view_based_map_v2.csv'):
     """Collate data from news article files and return in a consistent format. Save to json file, if necessary.
     Argyments:
         files = array of filepaths (expects jsons)
@@ -53,6 +53,8 @@ def collate_data(files, save_to=None, clean_text=None, mapfile='../data/v2/nytfo
         with open(file) as f:
             info_arr = json.load(f)
             for i, info_dict in enumerate(info_arr):
+                if i==2500:
+                    break
                 if (i % 1000 == 0):
                     print(f'Processed {i} articles in file {file}')
                 for j,view in enumerate(['liberal', 'conservative']):
@@ -94,8 +96,7 @@ def collate_data(files, save_to=None, clean_text=None, mapfile='../data/v2/nytfo
         df.to_csv(mapfile, index=False, encoding='utf-8')
 
 if __name__ == '__main__':
-    files = ['../data/v2/foxnews_content_v2.json', '../data/v2/nyt_content_isaac.json',
-             '../data/v2/nyt_content_liam.json', '../data/v2/nyt_content_sagar.json']
+    files = ['../data/v2/foxnews_content_v2.json', '../data/v2/nyt_content_v2.json']
     clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
     filepath = '../data/v2/nytfox_bias_collate.json'
     collate_data(files, save_to=filepath, clean_text=clean_text)
@@ -109,7 +110,7 @@ if __name__ == '__main__':
     train_title_emb = create_embeddings(train_title, glove_index, 16, 100, 'train_title')
     train_title_labels = create_token_labels(train_title, TITLE_VECTORIZER, dataset_name='train')
 
-    save_to_pickle(train_content_emb, '../data/embeddings/bias_content_embeddings.pkl')
-    save_to_pickle(train_title_emb, '../data/embeddings/bias_title_embeddings.pkl')
-    save_to_pickle(train_title_labels, '../data/embeddings/bias_title_labels.pkl')
-    save_to_pickle(title_index_word, '../data/embeddings/bias_index_word.pkl')
+    # save_to_pickle(train_content_emb, '../data/embeddings/bias_content_embeddings.pkl')
+    # save_to_pickle(train_title_emb, '../data/embeddings/bias_title_embeddings.pkl')
+    # save_to_pickle(train_title_labels, '../data/embeddings/bias_title_labels.pkl')
+    # save_to_pickle(title_index_word, '../data/embeddings/bias_index_word.pkl')
