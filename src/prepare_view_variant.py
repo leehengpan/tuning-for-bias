@@ -100,7 +100,7 @@ if __name__ == '__main__':
     filepath = '../data/v2/nytfox_bias_collate.json'
     collate_data(files, save_to=filepath, clean_text=clean_text)
 
-    train_content, train_title, test_content, test_title = train_test_split(input_file=filepath, test_split=0.01, shuffle=False)
+    train_content, train_title, test_content, test_title = train_test_split(input_file=filepath, test_split=0.2, shuffle=False)
     (content_vocab, content_word_index, content_index_word,
      title_vocab, title_word_index, title_index_word) = vectorize_data(train_content, train_title)
     glove_index = build_glove_embed_index()
