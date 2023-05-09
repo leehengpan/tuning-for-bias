@@ -143,36 +143,21 @@ def save_to_pickle(obj, filepath):
     with open(filepath, 'wb+') as f:
         pickle.dump(obj, f)
 
-def build_bbc_data(input_file='../data/v2/bbc_neutral.json'):
-
-    with open(input_file) as f:
-        data = json.load(f)
-
-    # separate content and title data into separate lists
-    bbc_test_content = [item['content'] for item in data]
-    bbc_test_title = [item['title'] for item in data]
-    return bbc_test_content, bbc_test_title
-
 
 if __name__ == '__main__':
     train_content, train_title, test_content, test_title = train_test_split()
-    bbc_content, bbc_title = build_bbc_data()
     (content_vocab, content_word_index, content_index_word,
      title_vocab, title_word_index, title_index_word) = vectorize_data(train_content, train_title)
     glove_index = build_glove_embed_index()
 
     train_content_emb = create_embeddings(train_content, glove_index, 256, 100, 'train_content')
     test_content_emb = create_embeddings(test_content, glove_index, 256, 100, 'test_content')
-    bbc_content_emb = create_embeddings(bbc_content, glove_index, 256, 100, 'bbc_content')
 
     train_title_emb = create_embeddings(train_title, glove_index, 16, 100, 'train_title')
     test_title_emb = create_embeddings(test_title, glove_index, 16, 100, 'test_title')
-    bbc_title_emb = create_embeddings(bbc_title, glove_index, 16, 100, 'bbc_title')
 
     train_title_labels = create_token_labels(train_title, TITLE_VECTORIZER, dataset_name='train')
     test_title_labels = create_token_labels(test_title, TITLE_VECTORIZER, dataset_name='test')
-    bbc_title_labels = create_token_labels(bbc_title, TITLE_VECTORIZER, dataset_name='bbc')
-
 
     save_to_pickle(train_content_emb, '../data/embeddings/train_content_embeddings.pkl')
     save_to_pickle(test_content_emb, '../data/embeddings/test_content_embeddings.pkl')
@@ -181,7 +166,3 @@ if __name__ == '__main__':
     save_to_pickle(train_title_labels, '../data/embeddings/train_title_labels.pkl')
     save_to_pickle(test_title_labels, '../data/embeddings/test_title_labels.pkl')
     save_to_pickle(title_index_word, '../data/embeddings/title_index_word.pkl')
-
-    save_to_pickle(bbc_content_emb, '../data/embeddings/bbc_content_embeddings.pkl')
-    save_to_pickle(bbc_title_emb, '../data/embeddings/bbc_title_embeddings.pkl')
-    save_to_pickle(bbc_title_labels, '../data/embeddings/bbc_title_labels.pkl')
