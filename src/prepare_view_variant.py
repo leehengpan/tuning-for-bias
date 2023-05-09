@@ -101,16 +101,16 @@ if __name__ == '__main__':
     filepath = '../data/v2/nytfox_bias_collate.json'
     collate_data(files, save_to=filepath, clean_text=clean_text)
 
-    train_content, train_title, test_content, test_title = train_test_split(input_file=filepath, test_split=0.2, shuffle=False)
+    train_content, train_title, test_content, test_title = train_test_split(input_file=filepath, test_split=0.01, shuffle=False)
     (content_vocab, content_word_index, content_index_word,
      title_vocab, title_word_index, title_index_word) = vectorize_data(train_content, train_title)
     glove_index = build_glove_embed_index()
 
-    train_content_emb = create_embeddings(train_content, glove_index, 256, 100, 'train_content')
-    train_title_emb = create_embeddings(train_title, glove_index, 16, 100, 'train_title')
-    train_title_labels = create_token_labels(train_title, TITLE_VECTORIZER, dataset_name='train')
+    train_content_emb = create_embeddings(train_content+test_content, glove_index, 256, 100, 'train_content')
+    train_title_emb = create_embeddings(train_title+test_title, glove_index, 16, 100, 'train_title')
+    train_title_labels = create_token_labels(train_title+test_title, TITLE_VECTORIZER, dataset_name='train')
 
-    # save_to_pickle(train_content_emb, '../data/embeddings/bias_content_embeddings.pkl')
-    # save_to_pickle(train_title_emb, '../data/embeddings/bias_title_embeddings.pkl')
-    # save_to_pickle(train_title_labels, '../data/embeddings/bias_title_labels.pkl')
+    save_to_pickle(train_content_emb, '../data/embeddings/bias_content_embeddings.pkl')
+    save_to_pickle(train_title_emb, '../data/embeddings/bias_title_embeddings.pkl')
+    save_to_pickle(train_title_labels, '../data/embeddings/bias_title_labels.pkl')
     # save_to_pickle(title_index_word, '../data/embeddings/bias_index_word.pkl')
