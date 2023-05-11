@@ -3,31 +3,49 @@ import tensorflow as tf
 from tensorflow.keras.layers import TextVectorization
 import pickle
 import json
+from embedding import positional_encoding
 
-# CHANGE WITH CARE
 np.random.seed(2470)
+CONTENT_SEQ_LEN = 256
+TITLE_SEQ_LEN = 16
+START_TOKEN = '<start>'
+END_TOKEN = '<end>'
+PAD_TOKEN = ''
 CONTENT_VECTORIZER = TextVectorization(max_tokens=100000, split='whitespace', output_mode='int',
-                                       standardize='lower_and_strip_punctuation', output_sequence_length=256)
+                                       standardize='lower', output_sequence_length=CONTENT_SEQ_LEN)
 TITLE_VECTORIZER = TextVectorization(max_tokens=15000, split='whitespace', output_mode='int',
-                                     standardize='lower_and_strip_punctuation', output_sequence_length=16)
+                                     standardize='lower', output_sequence_length=TITLE_SEQ_LEN)
 GLOVE_EMBED_SZ = 100
+GLOVE_EMBEDDINGS = '../data/glove.6B/glove.6B.100d.txt'
 
 
-def train_test_split(input_file='../data/nytfox_collate.json', test_split=0.05, shuffle=True):
+def pad_and_trim(text, window_size=16, start_token=START_TOKEN, end_token=END_TOKEN, pad_token=PAD_TOKEN):
+    words = text.split()
+    num_words = len(words)
+    trim_length = max((num_words - (window_size - 2)), 0)
+    pad_length = max(0, ((window_size - 2) - num_words))
+    padded_text = ' '.join([start_token] + words[:num_words - trim_length] + [end_token] + [pad_token] * pad_length)
+    return padded_text
+
+
+def train_test_split(input_file, test_split=0.05,
+                     content_seq_len=CONTENT_SEQ_LEN, title_seq_len=TITLE_SEQ_LEN,
+                     shuffle=True):
     """Read data from input_file and split into train and test arrays"""
 
     with open(input_file) as f:
         data = json.load(f)
 
     # separate content and title data into separate lists
-    content_arr = [item['content'] for item in data]
-    title_arr = [item['title'] for item in data]
+    content_arr = [pad_and_trim(item['content'], content_seq_len) for item in data]
+    title_arr = [pad_and_trim(item['title'], title_seq_len) for item in data]
 
     num_samples = len(content_arr)
     num_test_samples = int(test_split * num_samples)
 
     # find random indices to create train and test arrays
     idx = np.arange(0, num_samples)
+
     if shuffle:
         np.random.shuffle(idx)
 
@@ -35,11 +53,11 @@ def train_test_split(input_file='../data/nytfox_collate.json', test_split=0.05, 
     temp_content_arr = np.array(content_arr)[idx].tolist()
     temp_title_arr = np.array(title_arr)[idx].tolist()
 
-    train_content = temp_content_arr[:-num_test_samples]
-    test_content = temp_content_arr[-num_test_samples:]
+    train_content = temp_content_arr[:num_samples-num_test_samples]
+    test_content = temp_content_arr[num_samples-num_test_samples:]
 
-    train_title = temp_title_arr[:-num_test_samples]
-    test_title = temp_title_arr[-num_test_samples:]
+    train_title = temp_title_arr[:num_samples-num_test_samples]
+    test_title = temp_title_arr[num_samples-num_test_samples:]
 
     return train_content, train_title, test_content, test_title
 
@@ -66,40 +84,46 @@ def vectorize_data(train_content, train_title,
     return content_vocab, content_word_index, content_index_word, title_vocab, title_word_index, title_index_word
 
 
-def build_glove_embed_index(path_to_glove='../data/glove.6B/glove.6B.100d.txt'):
+def build_glove_embed_index(path_to_glove=GLOVE_EMBEDDINGS,
+                            start_token=START_TOKEN, end_token=END_TOKEN, pad_token=PAD_TOKEN,
+                            embedding_size=GLOVE_EMBED_SZ):
     embeddings_index = {}
     with open(path_to_glove) as f:
         for line in f:
             word, coefs = line.split(maxsplit=1)
             coefs = np.fromstring(coefs, "f", sep=" ")
             embeddings_index[word] = coefs
+
+    embeddings_index[start_token] = np.random.normal(size=(embedding_size), scale=0.1)
+    embeddings_index[end_token] = np.random.normal(size=(embedding_size), scale=0.1)
+    embeddings_index[pad_token] = np.zeros(shape=(embedding_size))
+
     print('Unique words in glove: {}'.format(len(embeddings_index)))
     return embeddings_index
 
+def build_embedding_init(word_index, embeddings_index, embedding_size=GLOVE_EMBED_SZ):
+    hits = 0
+    misses = 0
+    num_tokens = len(word_index)
+    embedding_init = np.zeros((num_tokens, embedding_size))
 
+    for word, i in word_index.items():
+        embedding_vector = embeddings_index.get(word)
+        if embedding_vector is not None:
+            embedding_init[i] = embedding_vector
+            hits += 1
+        else:
+            misses += 1
+    print(f'Hits: {hits}; Misses: {misses}')
+    return embedding_init, num_tokens
+
+# last four functions not used
 def build_start_stop_embeddings(emb_sz=GLOVE_EMBED_SZ, seed=2470):
     np.random.seed(seed)
     start_embedding = np.random.normal(size=(emb_sz))
     stop_embedding = np.random.normal(size=(emb_sz))
 
     return start_embedding, stop_embedding
-
-
-def positional_encoding(window_size, embedding_size):
-    depth = embedding_size / 2
-
-    # setup position and depth arrays of size (256 [or 32 with title] x 1) and (1 x 50) respectively
-    positions = np.arange(window_size).reshape(-1, 1)
-    depths = np.arange(depth).reshape(1, -1) / depth
-    angle_rates = 1 / (10000 ** depths)
-
-    # multiply the two matrices
-    angle_rads = positions * angle_rates
-
-    # get 100-D positional encoding with sin cos setups-- consider alternate interleaving?
-    pos_encoding = np.concatenate([np.sin(angle_rads), np.cos(angle_rads)], axis=-1)
-    return pos_encoding
-
 
 def create_embeddings(data, glove_index, window_size, embedding_size=100, dataset_name=None,
                       add_positional_embedding=True):
@@ -143,26 +167,3 @@ def save_to_pickle(obj, filepath):
     with open(filepath, 'wb+') as f:
         pickle.dump(obj, f)
 
-
-if __name__ == '__main__':
-    train_content, train_title, test_content, test_title = train_test_split()
-    (content_vocab, content_word_index, content_index_word,
-     title_vocab, title_word_index, title_index_word) = vectorize_data(train_content, train_title)
-    glove_index = build_glove_embed_index()
-
-    train_content_emb = create_embeddings(train_content, glove_index, 256, 100, 'train_content')
-    test_content_emb = create_embeddings(test_content, glove_index, 256, 100, 'test_content')
-
-    train_title_emb = create_embeddings(train_title, glove_index, 16, 100, 'train_title')
-    test_title_emb = create_embeddings(test_title, glove_index, 16, 100, 'test_title')
-
-    train_title_labels = create_token_labels(train_title, TITLE_VECTORIZER, dataset_name='train')
-    test_title_labels = create_token_labels(test_title, TITLE_VECTORIZER, dataset_name='test')
-
-    save_to_pickle(train_content_emb, '../data/embeddings/train_content_embeddings.pkl')
-    save_to_pickle(test_content_emb, '../data/embeddings/test_content_embeddings.pkl')
-    save_to_pickle(train_title_emb, '../data/embeddings/train_title_embeddings.pkl')
-    save_to_pickle(test_title_emb, '../data/embeddings/test_title_embeddings.pkl')
-    save_to_pickle(train_title_labels, '../data/embeddings/train_title_labels.pkl')
-    save_to_pickle(test_title_labels, '../data/embeddings/test_title_labels.pkl')
-    save_to_pickle(title_index_word, '../data/embeddings/title_index_word.pkl')
