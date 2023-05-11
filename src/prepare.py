@@ -108,11 +108,3 @@ def collate_data(files, save_to=None, clean_text=None, article_limit='all',
         df.to_csv(map_file, index=False, encoding='utf-8')
         print(f'Saved map to {map_file}')
 
-if __name__ == '__main__':
-    files = ['../data/foxnews_content.json', '../data/nyt_content.json']
-    clean_text = [remove_char_encoding, remove_special_char, make_lowercase]
-    collate_data(files, save_to='../data/nytfox_collate.json', clean_text=clean_text)
-
-
-
-
