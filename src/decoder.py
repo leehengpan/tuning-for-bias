@@ -1,58 +1,57 @@
 import tensorflow as tf
+from attention import CausalSelfAttention, CrossAttention
+from feedforward import FeedForward
+from embedding import PositionalEmbedding
 
-# Decoder block for the transformer model 
-class DecoderBlock(tf.keras.layers.Layer):
-    def __init__(self, emb_sz, num_heads, key_dim, **kwargs):
-        super(DecoderBlock, self).__init__(**kwargs)
+class DecoderLayer(tf.keras.layers.Layer):
+    def __init__(self, num_heads, embedding_size, ff_dim, dropout_rate=0.1):
+        super(DecoderLayer, self).__init__()
 
-        # dense layers for decoder block --> may need to change output 768 for embedding size 
-        self.ff_layer = tf.keras.Sequential([
-            tf.keras.layers.Dense(128, activation="relu"),
-            tf.keras.layers.Dense(emb_sz)
-        ])
-        
-        # self attention layer 
-        self.self_atten = tf.keras.layers.MultiHeadAttention(num_heads, key_dim)
-        
-        # cross attention layer 
-        self.cross_atten = tf.keras.layers.MultiHeadAttention(num_heads, key_dim)
-        
-        # normailization layers 
-        self.layer_norm_1 = tf.keras.layers.LayerNormalization()
-        self.layer_norm_2 = tf.keras.layers.LayerNormalization()
-        self.layer_norm_3 = tf.keras.layers.LayerNormalization()
-       
+        self.causal_self_attention = CausalSelfAttention(num_heads=num_heads, key_dim=embedding_size,
+                                                         dropout=dropout_rate)
+        self.cross_attention = CrossAttention(num_heads=num_heads, key_dim=embedding_size,
+                                              dropout=dropout_rate)
+        self.ffn = FeedForward(embedding_size, ff_dim)
 
-    def call(self, encoder_output, decoder_input):
-        
-        '''
-        encoder_output: (batch_size (TBD), window_size (512), embedding_size (768))
-        '''
-        
-        # self atten on the inputs to the decoder --> titles 
-        z_matrix = self.self_atten(decoder_input, decoder_input, use_causal_mask=True)
-        
-        # add and normalize the residuals from the self atten mechanism 
-        residuals = decoder_input + z_matrix
-        normalized_resid = self.layer_norm_1(residuals)
-        
-        # perform cross attention on normalized self-atten and the decoder context 
-        cross_atten_matrix = self.cross_atten(normalized_resid, encoder_output)
-        
-        # normalize the first normalization and the output of feed forward
-        residual_2 = normalized_resid + cross_atten_matrix
-        normalized_resid2 = self.layer_norm_2(residual_2)
-        
-        # feed forward the normalized output 
-        ff_output = self.ff_layer(normalized_resid2)
-        
-        # normalize and add the second layers 
-        residual_3 = ff_output + normalized_resid2
-        decoder_output = self.layer_norm_3(residual_3)
-        
-        return decoder_output
-    
-    def get_config(self):
-        return {'ff_layer': self.ff_layer, 'self_atten': self.self_atten,
-                'cross_atten': self.cross_atten, 'layer_norm_1': self.layer_norm_1,
-                'layer_norm_2': self.layer_norm_2, 'layer_norm_3': self.layer_norm_3}
+    def call(self, x, context, attention_mask=None):
+        x = self.causal_self_attention(x=x, attention_mask=attention_mask)
+        x = self.cross_attention(x=x, context=context)
+        x = self.ffn(x)
+        return x
+
+
+class Decoder(tf.keras.layers.Layer):
+    def __init__(self, num_layers, num_heads, ff_dim, vocab_size, embedding_size, window_size,
+                 embedding_initializer, embedding_trainability=False, dropout_rate=0.1):
+        super(Decoder, self).__init__()
+
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+
+        self.vocab_size = vocab_size
+        self.embedding_size = embedding_size
+        self.window_size = window_size
+
+        self.embedding_initializer = embedding_initializer
+        self.embedding_trainability = embedding_trainability
+
+        self.pos_embedding = PositionalEmbedding(self.vocab_size, self.embedding_size, self.window_size,
+                                                 self.embedding_initializer, self.embedding_trainability)
+        self.dropout = tf.keras.layers.Dropout(dropout_rate)
+
+        self.dec_layers = [DecoderLayer(num_heads, embedding_size, ff_dim, dropout_rate=dropout_rate)
+                           for i in range(num_layers)]
+
+    def call(self, x, context):
+        # `x` is token-IDs shape (batch, target_seq_len)
+        mask = self.pos_embedding.compute_mask(x)
+        mask = mask[:, tf.newaxis, :]
+        x = self.pos_embedding(x)  # (batch_size, target_seq_len, d_model)
+        x = self.dropout(x)
+
+        for i in range(self.num_layers):
+            x = self.dec_layers[i](x, context, attention_mask=mask)
+
+        # The shape of x is (batch_size, target_seq_len, d_model).
+        return x

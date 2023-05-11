@@ -1,47 +1,56 @@
 import tensorflow as tf
+from embedding import PositionalEmbedding
+from attention import GlobalSelfAttention
+from feedforward import FeedForward
 
-# Encoder block class for transformer model 
-class EncoderBlock(tf.keras.layers.Layer):
-    def __init__(self, emb_sz, num_heads, key_dim, **kwargs):
-        super(EncoderBlock, self).__init__(**kwargs)
 
-        # dense layers for encoder block --> NOTE TO GENERALIZE 
-        self.ff_layer = tf.keras.Sequential([
-            tf.keras.layers.Dense(128, activation="relu"),
-            tf.keras.layers.Dense(emb_sz)
-        ])
-        
-        # self attention layer 
-        self.self_atten = tf.keras.layers.MultiHeadAttention(num_heads, key_dim)
-        
-        # normailization layers 
-        self.layer_norm_1 = tf.keras.layers.LayerNormalization()
-        self.layer_norm_2 = tf.keras.layers.LayerNormalization()
-       
-    def call(self, embedded_articles):
-        
-        '''
-        embedded_artiles: (batch_size (TBD), window_size (512), embedding_size (768))
-        '''
-        # self attention on embedded articles --> z (window_size x key_dims)
-        z_matrix = self.self_atten(embedded_articles, embedded_articles)
-        
-        # add part of Add and Normalize 
-        residuals = embedded_articles + z_matrix
-        
-        # normalize the added matrixes 
-        normalized_resid = self.layer_norm_1(residuals)
-        
-        # feed forward the normalized output 
-        ff_output = self.ff_layer(normalized_resid)
-        
-        # normalize the first normalization and the output of feed forward
-        normalized_resid2 = normalized_resid + ff_output
-        
-        encoder_output = self.layer_norm_2(normalized_resid2)
-        
-        return encoder_output
-    
-    def get_config(self):
-        return {'ff_layer': self.ff_layer, 'self_atten': self.self_atten, 
-                'layer_norm_1': self.layer_norm_1, 'layer_norm_2': self.layer_norm_2}
+class EncoderLayer(tf.keras.layers.Layer):
+    def __init__(self, num_heads, embedding_size, ff_dim, dropout_rate=0.1):
+        super().__init__()
+        self.num_heads = num_heads
+        self.embedding_size = embedding_size
+        self.ff_dim = ff_dim
+        self.dropout_rate = dropout_rate
+
+        self.self_attention = GlobalSelfAttention(num_heads=num_heads, key_dim=embedding_size,
+                                                  dropout=dropout_rate)
+        self.ffn = FeedForward(embedding_size, ff_dim)
+
+    def call(self, x, attention_mask=None):
+        x = self.self_attention(x, attention_mask=attention_mask)
+        x = self.ffn(x)
+        return x
+
+
+class Encoder(tf.keras.layers.Layer):
+    def __init__(self, num_layers, num_heads, ff_dim, vocab_size, embedding_size,
+                 window_size, embedding_initializer, embedding_trainability=False, dropout_rate=0.1):
+        super().__init__()
+
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+
+        self.vocab_size = vocab_size
+        self.embedding_size = embedding_size
+        self.window_size = window_size
+        self.embedding_initializer = embedding_initializer
+        self.embedding_trainability = embedding_trainability
+
+        self.pos_embedding = PositionalEmbedding(self.vocab_size, self.embedding_size, self.window_size,
+                                                 self.embedding_initializer, self.embedding_trainability)
+
+        self.enc_layers = [EncoderLayer(num_heads, embedding_size, ff_dim, dropout_rate) for i in range(num_layers)]
+        self.dropout = tf.keras.layers.Dropout(dropout_rate)
+
+    def call(self, x):
+        # x is tokenized numerical values
+        mask = self.pos_embedding.compute_mask(x)
+        mask = mask[:, tf.newaxis, :]
+        x = self.pos_embedding(x)
+
+        # Add dropout.
+        x = self.dropout(x)
+        for i in range(self.num_layers):
+            x = self.enc_layers[i](x, attention_mask=mask)
+        return x
