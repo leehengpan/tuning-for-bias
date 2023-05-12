@@ -12,6 +12,8 @@ In this project, we study how a language model trained on two divergent media ho
 
 We've tried to make it simple to run the code and reproduce our results. Once the repository has been cloned and environment duplicated, fire up `main.ipynb` in the src directory. It handles the necessary imports and starts executing the code from the first steps related to data preparation and preprocessing, to model training and evaluation. Bear that certain sections are optional and have been marked as such depending upon the exact use case. These involve choosing to save model weights, loading custom model weights, or training the model from scratch.
 
+-tp
+
 ## Results
 | Masked Accuracy | Masked Loss    | Mean BLEU      |
 |-----------------|----------------|----------------|
