@@ -6,7 +6,7 @@ In this project, we study how a language model trained on two divergent media ho
 
 ## Architecture
 
-<img src="https://github.com/raichandanisagar/text-to-title/blob/main/report/bert-image-example.jpeg" width="250"/>
+<img src="https://github.com/raichandanisagar/text-to-title/blob/main/report/bert-image-example.jpeg" width="300"/>
 
 ## Results
 | Masked Accuracy | Masked Loss    | Mean BLEU      |
